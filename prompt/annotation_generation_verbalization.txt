@@ -1,0 +1,16 @@
+Your task is to convert a single knowledge triple into a simple and grammatically correct English sentence.
+
+Important instructions:
+- Do NOT add any external knowledge or interpretation.
+- Use the original words from the triple.
+- Generate exactly one sentence.
+- Do not include any additional explanation.
+
+Example:
+Triple: (Marfan syndrome, medicine.risk_factor.diseases, Myxomatous degeneration)
+Sentence: Marfan syndrome is a risk factor for Myxomatous degeneration.
+Triple: (Monotheism, religion.religion.beliefs, Sikhism)  
+Sentence: Monotheism is a belief of Sikhism.
+
+Now perform the task with the following input:  
+Triple: {triple}

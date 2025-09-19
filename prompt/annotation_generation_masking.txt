@@ -1,0 +1,38 @@
+Your task is to replace a specific phrase in a sentence with a type-indicating placeholder (e.g., "the person", "the record label", "the ideology") that semantically describes the original phrase.
+
+Instructions:
+- You are given a sentence and a target phrase that appears in the sentence.
+- Replace the target phrase with a semantic placeholder phrase that accurately reflects its type (e.g., "the person" for a person’s name, "the country" for a location, "the concept" for a theory).
+- Output only type-indicating placeholder. Do not include any explanation or commentary.
+
+### Example 1
+Sentence: Kurt Gödel developed Gödel’s completeness theorem. 
+Target phrase: Gödel's completeness theorem 
+Place holder: *the theorem*
+Output: Kurt Gödel developed *the theorem*.
+
+### Example 2  
+Sentence: A&M Octone Records signed Dropping Daylight as one of their artists.
+Target phrase: A&M Octone Records
+Place holder: *The record label*
+Output: *The record label* signed Dropping Daylight as one of their artists.
+
+### Example 3  
+Sentence: David Wylie advocated for the issue of nonviolence.
+Target phrase: nonviolence
+Place holder: *the ideology*
+Output: David Wylie advocated for the issue of *the ideology*.
+
+### Example 4
+Sentence: Gerald Baron Cohen is an accountant and the son of Erran Baron Cohen, who worked on the music for Grimsby.
+Target phrase: Gerald Baron Cohen
+Place holder: *the person*
+Output: *the person* is an accountant and the son of Erran Baron Cohen, who worked on the music for Grimsby.
+
+
+Now perform the task with the following input:
+
+Sentence: {merged}
+Target phrase: {a_entity}
+Place holder: {place_holder}
+Output:

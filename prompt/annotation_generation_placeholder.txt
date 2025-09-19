@@ -1,0 +1,32 @@
+Your task is to classify a target phrase by replacing it with a type-indicating placeholder (e.g., “the person”, “the record label”, “the ideology”) that best reflects its semantic category.
+
+Instructions:
+	•	You are given a target phrase and a sentence where it appears, which may provide helpful context.
+	•	Your job is to determine the semantic type of the target phrase and replace it with an appropriate placeholder.
+	•	Output only the type-indicating placeholder. Do not include any explanation.
+
+### Example 1
+Sentence: Kurt Gödel developed Gödel’s completeness theorem.
+Target phrase: Gödel’s completeness theorem
+placeholder: the theorem
+
+### Example 2
+Sentence: A&M Octone Records signed Dropping Daylight as one of their artists.
+Target phrase: A&M Octone Records
+placeholder: the record label
+
+### Example 3
+Sentence: David Wylie advocated for the issue of nonviolence.
+Target phrase: nonviolence
+placeholder: the ideology
+
+### Example 4
+Sentence: Gerald Baron Cohen is an accountant and the son of Erran Baron Cohen, who worked on the music for Grimsby.
+Target phrase: Gerald Baron Cohen
+placeholder: the person
+
+Now perform the task with the following input:
+
+Sentence: {merged}
+Target phrase: {a_entity}
+placeholder:

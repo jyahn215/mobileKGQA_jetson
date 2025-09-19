@@ -1,0 +1,45 @@
+You are a language model that integrates multiple factual sentences into a single English sentence that describes the answer, using only the provided information.
+
+Instructions:
+- Given input sentences, write one fluent and grammatically correct English sentence that describes the answer.
+- Make sure all facts from the input sentences are included in the output sentence to describe the answer.
+- Output only the final merged sentence. Do not provide any explanation or reasoning.
+- If input sentences include encoded identifiers (e.g., m.0j2sdtx), replace it with an appropriate type-indicating phrase such as the person, the location, or the film, depending on the context.
+
+### Example 1
+Input Sentences:
+- Lampedusa Airport is located in Italy.
+- The capital of Italy is Rome.
+- Italy was established on 2 June 1946.
+
+Answer: Rome
+
+Output: Rome is the capital of Italy, a country that was established on 2 June 1946 and where Lampedusa Airport is located.
+
+### Example 2
+Input Sentences:
+- Gerald Baron Cohen is an accountant.
+- Erran Baron Cohen is the parent of Gerald Baron Cohen.
+- Erran Baron Cohen worked on the music for Grimsby.
+
+Answer: Gerald Baron Cohen
+
+Output: Gerald Baron Cohen is an accountant and the son of Erran Baron Cohen, who worked on the music for Grimsby.
+
+### Example 3
+Input Sentences:
+- m.046csbd is the discoverer of the Euler–Lagrange equation.
+- Mikhail Golovin was a student of m.046csbd.
+
+Answer: Mikhail Golovin
+
+Output: Mikhail Golovin was a student of the person who discovered the Euler–Lagrange equation. 
+
+
+Now perform the task with the following input:
+
+Input Sentences:  
+{sentences}
+Answer: {a_entity}
+
+Output:

@@ -1,0 +1,40 @@
+Your task is to revise the given question to ensure that all specified question entities are explicitly included in it. 
+The original answer of the question, represented by the placeholder (e.g., the person, the process), must not change in the revised question.
+
+Instructions:
+	•	You are given a sentence containing a placeholder, a list of question entities, and a question.
+	•	If any of the question entities are missing from the question, revise it to include them naturally and meaningfully.
+	•	You must preserve the original answer implied by the placeholder. Do not change the type or identity of what the question is asking for.
+	•	Your output should be the revised question only without explanation.
+
+Example 1
+Sentence: *the person*, who is an accountant, is the son of Erran Baron Cohen, who worked on the music for Grimsby.
+Question entity: accountant, Grimsby
+Question: Who is the person whose parent worked on the music?
+Revised question: Who is the accountant whose parent worked on the music for Grimsby?
+
+Example 2
+Sentence: *the process* is the process through which plants convert sunlight into energy.
+Question entity: sunlight, plants
+Question: What is the process through which energy is produced?
+Revised question: What is the process through which plants convert sunlight into energy?
+
+Example 3
+Sentence: *the river* which flows through South America, is one of the longest rivers in the world.
+Question entity: South America
+Question: What is one of the longest rivers in the world?
+Revised question: What is the longest river in the world that flows through South America?
+
+Example 4
+Sentence: *the event* marked the beginning of the French Revolution.
+Question entity: French Revolution
+Question: What event marked the beginning of the revolution?
+Revised question: What event marked the beginning of the French Revolution?
+
+
+Now perform the task with the following input:
+
+Sentence: {masked}
+Question entity: {q_entity}
+Question: {question}
+Revised question:

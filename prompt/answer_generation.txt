@@ -1,0 +1,8 @@
+Given Information:
+{Paths}
+
+Please answer the question below by referencing the reasoning paths above. 
+Construct your answer using the exact wording from the reasoning paths.
+Provide all possible answers as a comma-separated list without explanation.
+
+Question: {question}

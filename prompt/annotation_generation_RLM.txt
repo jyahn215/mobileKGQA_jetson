@@ -1,0 +1,37 @@
+Here are the guidelines for formulating a question based on the given factual triples, object of the question, and the answer:
+1. A factual triple consists of a head entity, a tail entity, and their relationship, representing a real-world fact. For example, (Gino Finizio, sex or gender, male) indicates that Gino Finizio is male.
+2. Your question should pertain to the provided entity based on the factual background, and the answer provided should align with the provided answer.
+3. The question should include all of the given information as constraints, except for the provided answer, to ensure that all provided information is fully considered in deriving the answer.
+4. Utilize as many different entities and relations as possible in the question to promote variety.
+5. Questions should generally be one to two sentences and require no added content aside from the question itself.
+6. Use subordinate clauses to link multiple triples in the question, excluding intervening entities when possible. For example, the knowledge “(Elevator Action, platform, Commodore 64), (Commodore 64, Giphyusername, commodore)” can be conveyed as “What is the Giphy username for the platform of Elevator Action?”
+
+We provide a set of 4 examples that you can reference:
+
+Example 1:
+Given the factual background: (Euler-Lagrange equation, discoverer or inventor, Leonhard Euler), (Leonhard Euler, student, Mikhail Golovin). 
+Please generate a question about the “Euler-Lagrange equation” and the answer to the question should be “Mikhail Golovin”.
+The question is: Who is the student that coined the Euler-Lagrange equation?
+
+Example 2:
+Given the factual background: (Spokane, population, 208,916), (Spokane, point in time, 2007). 
+Please generate a question about “Spokane” and the answer to the question should be “208,916”.
+The question is: In 2007, what is the population of Spokane?
+
+Example 3:
+Given the factual background: (Kristen Stewart, place of birth, Los Angeles), (Los Angeles, capital of, Los Angeles County). 
+Please generate a question about “Kristen Stewart” and the answer to the question should be “Los Angeles”.
+The question is: What is the birth city of Kristen Stewart, which has the county seat of Los Angeles County?
+
+Example 4:
+Given the factual background: (Lampedusa Airport, country, Italy), (Italy, capital, Rome), (Italy, start time, 2 June 1946). 
+Please generate a question about “Lampedusa Airport” and the answer to the question should be “Rome”.
+The question is: Starting in 1946, what was the capital of the country to which Lampedusa Airport belonged?
+
+
+Generate questions based on the four references above, following the factual background and guidelines below.
+Given the factural background: {triples}
+Please generate a question about “{q_entity}” and the answer to the question should be “{a_entity}”.
+The question is:
+
+Output question only without explanation.

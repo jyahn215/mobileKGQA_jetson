@@ -1,0 +1,28 @@
+Your task is to generate a natural-sounding question based on a sentence in which the answer has already been masked with a semantic placeholder (e.g., the person, the process, the river). 
+You are also provided with one or more question entities, which must be included in the generated question.
+
+Instructions:
+- Convert the given sentence into a question where the part marked with asterisks is the answer.
+- You must include question entities in the question.
+- Output only the question without additional explanation.
+
+### Example 1
+Sentence: *the person*, an accountant, is the son of Erran Baron Cohen, who worked on the music for Grimsby.
+Question entity: accountant, Grimsby
+Question: Who is the accountant whose parent worked on the music for Grimsby?
+
+### Example 2
+Sentence: *the process* is the process through which plants convert sunlight into energy.
+Question entity: sunlight, plants
+Question: What is the process through which plants convert sunlight into energy?
+
+### Example 3
+Sentence: *the river* which flows through South America, is one of the longest rivers in the world.
+Question entity: South America
+Question: What is the longest river in the world that flows through South America?
+
+Now perform the task with the following input:
+
+Sentence: {masked}
+Question entity: {q_entity}
+Question:

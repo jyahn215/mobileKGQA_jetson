@@ -1,0 +1,55 @@
+Given triples, create a question that illustrates relationships between multiple entities,
+ensuring that the question entity is explicitly mentioned in the question and that the answer entity 
+is the correct answer to the generated question.
+
+Follow these steps:
+
+1. Find a triple containing the Answer Entity. Based on this triple, form an initial question asking about the Answer Entity.
+2. Check if there are other triples involving the Answer Entity. If found, incorporate relevant information into the question to make it more specific.
+3. If there are no more triples involving the Answer Entity, select a triple that contains any entity already mentioned in the current question. Add its information to further enrich the question.
+4. Continue enriching the question following step 3 until no relevant triples remain.
+
+Example:
+
+Given Triples:
+- Accountant - people.person.profession - Gerald Baron Cohen
+- Gerald Baron Cohen - people.person.parents - Erran Baron Cohen
+- Erran Baron Cohen - film.film.music - Grimsby
+
+Question Entity:
+- Accountant, Grimsby
+
+Answer Entity:
+- Gerald Baron Cohen
+
+Generation Steps:
+1. Identify a triple containing the answer entity:
+   - Triple: Accountant - people.person.profession - Gerald Baron Cohen
+   - Question: "Who is the accountant?"
+
+2. Check for additional triples involving answer entity:
+   - Triple: Gerald Baron Cohen - people.person.parents - Erran Baron Cohen
+   - Question: "Who is the accountant whose parent is Erran Baron Cohen?"
+
+3. Check other triples already mentioned in the current question:
+   - Triple: Erran Baron Cohen - film.film.music - Grimsby
+   - Question: "Who is the accountant whose parent composed the music for the film Grimsby?"
+
+4. No more triples to process. Finalize the generation process
+
+
+Now perform the task with the following input:
+
+Given Triples:
+{triples}
+
+Question Entity:
+{q_entity}
+
+Answer Entity:
+{a_entity}
+
+Output format:
+   Generation Steps:
+   (Step-by-step analysis showing which triples are used and how the question is enriched)
+   Question: (generated question)
