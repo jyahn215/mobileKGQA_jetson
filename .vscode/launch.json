@@ -10,15 +10,57 @@
       "request": "launch",
       "program": "${workspaceFolder}/src/gen_annotations.py",
       "console": "integratedTerminal",
-      "args": ["--method", "RLM", "--dataset", "cwq", "--port", "11001", "--domain", "domain2", "--gen_num", "2", "2", "2"]
+      "args": [
+        "--method",
+        "RLM",
+        "--dataset",
+        "cwq",
+        "--port",
+        "11001",
+        "--domain",
+        "domain2",
+        "--gen_num",
+        "2",
+        "2",
+        "2"
+      ]
     },
     {
-      "name": "Python Debugger: Current File",
+      "name": "save_batches",
       "type": "debugpy",
       "request": "launch",
-      "program": "${file}",
+      "program": "${workspaceFolder}/src/mobileKGQA/save_batches.py",
       "console": "integratedTerminal",
-      "cwd": "${fileDirname}"
+      "cwd": "${workspaceFolder}",
+      "args": [
+        "ReaRev",
+        "--entity_dim",
+        "50",
+        "--lr",
+        "0.0005",
+        "--lm",
+        "relbert",
+        "--num_iter",
+        "3",
+        "--num_ins",
+        "2",
+        "--num_gnn",
+        "2",
+        "--gpu",
+        "0",
+        "--dataset_name",
+        "webqsp",
+        "--domain",
+        "total",
+        "--test_domain",
+        "total",
+        "--bit",
+        "64",
+        "--data_folder",
+        "./data/preprocessed_data/webqsp/_domains/",
+        "--batch_size",
+        "1"
+      ]
     },
     {
       "name": "get_relevant_triples",
@@ -55,7 +97,9 @@
         "--eval_every",
         "2",
         "--lm",
-        "gte-qwen2:1.5b",
+        "relbert",
+        "--bit",
+        "256",
         "--num_iter",
         "3",
         "--num_ins",
@@ -73,7 +117,7 @@
         "--num_epoch",
         "100",
         "--gpu",
-        "7",
+        "0",
         "--dataset_name",
         "webqsp",
         "--domain",
@@ -113,7 +157,11 @@
       "request": "launch",
       "program": "${workspaceFolder}/src/gen_annotations.py",
       "console": "integratedTerminal",
-      "args": ["eval", "--method", "RLM"]
+      "args": [
+        "eval",
+        "--method",
+        "RLM"
+      ]
     },
     {
       "name": "hashing_module",
@@ -121,7 +169,10 @@
       "request": "launch",
       "program": "${workspaceFolder}/src/train_hashing_module.py",
       "console": "integratedTerminal",
-      "args": ["-gpu", "0"]
+      "args": [
+        "-gpu",
+        "0"
+      ]
     },
     {
       "name": "gen_annotations",
@@ -165,7 +216,9 @@
       "request": "launch",
       "program": "${workspaceFolder}/src/prediction_guided_planning.py",
       "console": "integratedTerminal",
-      "args": ["--shortest_path"]
+      "args": [
+        "--shortest_path"
+      ]
     },
     {
       "name": "Debug MobileKGQA",

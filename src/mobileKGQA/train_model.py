@@ -1,9 +1,9 @@
-
 from utils import create_logger
 import time
 import numpy as np
 import os, math
 import wandb
+import pickle
 
 import torch
 from torch.optim.lr_scheduler import ExponentialLR
@@ -12,7 +12,7 @@ import torch.optim as optim
 from tqdm import tqdm
 tqdm.monitor_iterval = 0
 
-from dataset_load import load_data
+from dataset_load import load_data_new 
 from models.ReaRev.rearev import ReaRev
 from evaluate import Evaluator
 # from deepspeed.profiling.flops_profiler import FlopsProfiler
@@ -35,7 +35,7 @@ class Trainer_KBQA(object):
         self.device = torch.device('cuda' if args['use_cuda'] else 'cpu')
         self.reset_time = 0
         rel_hidden, rel_mask, rel_inv_hidden, rel_inv_mask = self.load_data(args, args['lm'])
-        
+
         if 'decay_rate' in args:
             self.decay_rate = args['decay_rate']
         else:
@@ -57,7 +57,7 @@ class Trainer_KBQA(object):
         print("Total Training Params", total_params)
         print(f"Model on GPU: {all(params.is_cuda for params in self.model.parameters())}")
         print(f"Model is loaded on {self.device}")
-        
+
         # if args['relation_word_emb']:
         #     #self.model.use_rel_texts(self.rel_texts, self.rel_texts_inv)
         #     self.model.encode_rel_texts(self.rel_texts, self.rel_texts_inv)
@@ -66,11 +66,10 @@ class Trainer_KBQA(object):
                                        relation2id=self.relation2id, device=self.device)
         self.load_pretrain()
         self.optim_def()
-        
+
         self.num_relation =  self.num_kb_relation
         self.num_entity = len(self.entity2id)
         # self.num_word = None # len(self.word2id) # modified
-                                  
 
         print("Entity: {}, Relation: {}".format(self.num_entity, self.num_relation))
 
@@ -84,7 +83,7 @@ class Trainer_KBQA(object):
                     setattr(self, k, args['data_folder'] + v)
 
     def optim_def(self):
-        
+
         trainable = filter(lambda p: p.requires_grad, self.model.parameters())
         self.optim_model = optim.Adam(trainable, lr=self.learning_rate)
         if self.decay_rate > 0:
@@ -94,15 +93,16 @@ class Trainer_KBQA(object):
         # if args["model_name"] == "GraftNet":
         #     dataset = load_data_graft(args, tokenize)
         # else:
-        dataset = load_data(args, tokenize)
+        dataset = load_data_new(args, tokenize)
         self.train_data = dataset["train"]
         self.valid_data = dataset["valid"]
         self.test_data = dataset["test"]
         self.entity2id = dataset["entity2id"]
         self.relation2id = dataset["relation2id"]
+
         # self.word2id = dataset["word2id"]
         # self.num_word = dataset["num_word"]
-        self.num_kb_relation = self.test_data.num_kb_relation
+        self.num_kb_relation = len(self.relation2id) + 1 # +1 for self-loop
         self.num_entity = len(self.entity2id)
 
         rel_hidden, rel_mask, rel_inv_hidden, rel_inv_mask = dataset["rel_info"]
@@ -121,7 +121,34 @@ class Trainer_KBQA(object):
             self.load_ckpt(ckpt_path)
 
     def evaluate(self, data, write_info, test_domain, test_batch_size=20,):
-        return self.evaluator.evaluate(data, test_batch_size, write_info=write_info, test_domain=test_domain)
+        return self.evaluator.evaluate(data, test_batch_size, write_info=write_info, test_domain=test_domain)     
+
+    def train_epoch(self):
+        self.model.train()
+        self.train_data.reset_batches(is_sequential=False)
+        losses = []
+        actor_losses = []
+        ent_losses = []
+        # num_epoch = math.ceil(self.train_data.num_data / self.args['batch_size'])
+        num_epoch = len(self.train_data)
+        h1_list_all = []
+        f1_list_all = []
+        for iteration in tqdm(range(num_epoch)):
+            batch = self.train_data.get_batch(iteration, self.args['batch_size'], self.args['fact_drop'])
+
+            self.optim_model.zero_grad()
+            loss, _, _, tp_list = self.model(batch, training=True)
+            # if tp_list is not None:
+            h1_list, f1_list = tp_list
+            h1_list_all.extend(h1_list)
+            f1_list_all.extend(f1_list)
+            loss.backward()
+            torch.nn.utils.clip_grad_norm_([param for name, param in self.model.named_parameters()],
+                                           self.args['gradient_clip'])
+            self.optim_model.step()
+            losses.append(loss.item())
+        extras = [0, 0]
+        return np.mean(losses), extras, h1_list_all, f1_list_all
 
     def train(self, start_epoch, end_epoch):
         # self.load_pretrain()
@@ -138,13 +165,13 @@ class Trainer_KBQA(object):
 
             if self.decay_rate > 0:
                 self.scheduler.step()
-            
+
             # self.logger.info("Epoch: {}, loss : {:.4f}, time: {}".format(epoch + 1, loss, time.time() - st))
             # self.logger.info("Training h1 : {:.4f}, f1 : {:.4f}".format(np.mean(h1_list_all), np.mean(f1_list_all)))
             wandb.log({"Epoch": epoch, "train_loss": loss, "train_h1": np.mean(h1_list_all), "train_f1": np.mean(f1_list_all)})
             exp_name = self.args['experiment_name']
             print(f"model_config: {exp_name}")
-            
+
             if (epoch + 1) % eval_every == 0:
 
                 test_f1, test_h1, test_em = self.evaluate(self.test_data, 
@@ -153,7 +180,7 @@ class Trainer_KBQA(object):
                                                           test_domain=f"{self.test_domain}_temp")
                 # self.logger.info("TEST F1: {:.4f}, H1: {:.4f}, EM {:.4f}".format(test_f1, test_h1, test_em))
                 wandb.log({"Epoch": epoch, "test_f1": test_f1, "test_h1": test_h1, "test_em": test_em})
-                
+
                 # if test_h1 > self.best_h1:
                 #     test_f1, test_h1, test_em = self.evaluate(self.test_data, self.test_batch_size, write_info=True)
                 #     wandb.log({"best_h1_test_f1": test_f1, "best_h1_test_h1": test_h1, "best_h1_test_em": test_em})
@@ -163,7 +190,7 @@ class Trainer_KBQA(object):
                     # _ = self.evaluate(self.train_data, self.test_batch_size, write_info=True, split="train")
                     # _ = self.evaluate(self.valid_data, self.test_batch_size, write_info=True, split="dev")
                     # test_f1, test_h1, test_em = self.evaluate(self.test_data, self.test_batch_size, write_info=True, split="test")
-                    
+
                     # self.logger.info("TEST F1: {:.4f}, H1: {:.4f}, EM {:.4f}".format(test_f1, test_h1, test_em))
                     info_ori_path = os.path.join("./ckpts/mobileKGQA","{}_test_{}_temp.info".format(self.args['experiment_name'], self.test_domain))
                     info_new_path = os.path.join("./ckpts/mobileKGQA", "{}_test_{}.info".format(self.args['experiment_name'], self.test_domain))
@@ -219,33 +246,6 @@ class Trainer_KBQA(object):
         # self.logger.info("TEST F1: {:.4f}, H1: {:.4f}, EM {:.4f}".format(test_f1, test_hits, test_ems))
         wandb.log({"test_f1": test_f1, "test_h1": test_hits, "test_em": test_ems})
 
-    def train_epoch(self):
-        self.model.train()
-        self.train_data.reset_batches(is_sequential=False)
-        losses = []
-        actor_losses = []
-        ent_losses = []
-        num_epoch = math.ceil(self.train_data.num_data / self.args['batch_size'])
-        h1_list_all = []
-        f1_list_all = []
-        for iteration in tqdm(range(num_epoch)):
-            batch = self.train_data.get_batch(iteration, self.args['batch_size'], self.args['fact_drop'])
-            
-            self.optim_model.zero_grad()
-            loss, _, _, tp_list = self.model(batch, training=True)
-            # if tp_list is not None:
-            h1_list, f1_list = tp_list
-            h1_list_all.extend(h1_list)
-            f1_list_all.extend(f1_list)
-            loss.backward()
-            torch.nn.utils.clip_grad_norm_([param for name, param in self.model.named_parameters()],
-                                           self.args['gradient_clip'])
-            self.optim_model.step()
-            losses.append(loss.item())
-        extras = [0, 0]
-        return np.mean(losses), extras, h1_list_all, f1_list_all
-
-    
     def save_ckpt(self, reason="f1"):
         name = self.args['experiment_name']
 
@@ -263,6 +263,5 @@ class Trainer_KBQA(object):
         model_state_dict = checkpoint["model_state_dict"]
 
         model = self.model
-        #self.logger.info("Load param of {} from {}.".format(", ".join(list(model_state_dict.keys())), filename))
+        # self.logger.info("Load param of {} from {}.".format(", ".join(list(model_state_dict.keys())), filename))
         model.load_state_dict(model_state_dict, strict=False)
-

@@ -13,6 +13,7 @@ from transformers import AutoTokenizer
 import time
 
 import os
+from lazy_loader import LazyDataset
 
 
 class BasicDataLoader(object):
@@ -675,8 +676,6 @@ class BasicDataLoader(object):
         #     return hidden_list, mask_list
 
 
-
-
 class SingleDataLoader(BasicDataLoader):
     """
     Single Dataloader creates training/eval batches during KGQA.
@@ -719,8 +718,104 @@ class SingleDataLoader(BasicDataLoader):
                self.answer_dists[sample_ids]
 
 
-def load_data(config, tokenize):
+def load_data_new(config, tokenize):
 
+    """
+    Creates train/val/test dataloaders (seperately).
+    """
+    with open(os.path.join(config['data_folder'], "./../ent2idx.pkl"), 'rb') as rf:
+        entity2id = pickle.load(rf)
+    word2id = None # modified
+    with open(os.path.join(config['data_folder'], "./../rel2idx.pkl"), 'rb') as rf:
+        relation2id = pickle.load(rf)
+
+    if config["bit"] == None:
+        path = os.path.join(config['data_folder'], "./../last_hidden_state/", config["lm"], "ori")
+    else:
+        bit = config["bit"]
+        path = os.path.join(config['data_folder'], "./../last_hidden_state/", config["lm"], f"{bit}bit")
+
+    # config setting
+    train_config = config.copy()
+    train_config["data_folder"] = os.path.join(config["data_folder"], config["domain"])
+    test_config = config.copy()
+    test_config["data_folder"] = os.path.join(config["data_folder"], config["test_domain"])
+
+    rel_hidden = torch.load(os.path.join(path, "rel", "rel_all.pt"), map_location='cpu')
+    rel_hidden.requires_grad = False
+    rel_mask = torch.load(os.path.join(path, "rel", "rel_mask.pt"), map_location='cpu')
+    rel_mask.requires_grad = False
+    rel_pad = torch.load(os.path.join(path, "rel", "rel_pad.pt"), map_location='cpu')
+    rel_pad.requires_grad = False
+    rel_pad_mask = torch.load(os.path.join(path, "rel", "rel_pad_mask.pt"), map_location='cpu')
+    rel_pad_mask.requires_grad = False
+    rel_hidden = torch.cat([rel_hidden, rel_pad], dim=0)
+    rel_hidden = rel_hidden.to(torch.float32) if rel_hidden.dtype != torch.float32 else rel_hidden
+    rel_mask = torch.cat([rel_mask, rel_pad_mask], dim=0)
+
+    rel_inv_hidden = torch.load(os.path.join(path, "rel_inv", "rel_inv_all.pt"), map_location='cpu')
+    rel_inv_hidden.requires_grad = False
+    rel_inv_mask = torch.load(os.path.join(path, "rel_inv", "rel_inv_mask.pt"), map_location='cpu')
+    rel_inv_mask.requires_grad = False
+    rel_inv_pad = torch.load(os.path.join(path, "rel_inv", "rel_inv_pad.pt"), map_location='cpu')
+    rel_inv_pad.requires_grad = False
+    rel_inv_pad_mask = torch.load(os.path.join(path, "rel_inv", "rel_inv_pad_mask.pt"), map_location='cpu')
+    rel_inv_pad_mask.requires_grad = False
+    rel_inv_hidden = torch.cat([rel_inv_hidden, rel_inv_pad], dim=0)
+    rel_inv_hidden = rel_inv_hidden.to(torch.float32) if rel_inv_hidden.dtype != torch.float32 else rel_inv_hidden
+    rel_inv_mask = torch.cat([rel_inv_mask, rel_inv_pad_mask], dim=0)
+
+    rel_info = (rel_hidden, rel_mask, rel_inv_hidden, rel_inv_mask)
+
+    # if config["is_eval"]:
+    #     train_data = None
+    #     # valid_path = test_config['data_folder'] + "dev.json"
+    #     # print(f"valid_data is from {valid_path}")
+    #     # valid_data = SingleDataLoader(test_config, word2id, relation2id, entity2id, tokenize, data_type="dev")
+    #     valid_data = None
+    #     test_data = SingleDataLoader(test_config, word2id, relation2id, entity2id, tokenize, data_type="test")
+    #     # num_word = test_data.num_word
+    # else:
+    #     train_data = SingleDataLoader(train_config, word2id, relation2id, entity2id, tokenize, data_type="train")
+
+    #     # valid_path = os.path.join(train_config['data_folder'], "dev.json")
+    #     # print(f"valid_data is from {valid_path}")
+    #     # valid_data = SingleDataLoader(train_config, word2id, relation2id, entity2id, tokenize, data_type="dev")
+    #     valid_data = None
+
+    #     test_data = SingleDataLoader(test_config, word2id, relation2id, entity2id, tokenize, data_type="test")
+    #     # num_word = train_data.num_word
+    # # relation_texts = test_data.rel_texts
+    # # relation_texts_inv = test_data.rel_texts_inv
+    # # entities_texts = None
+
+    if config["is_eval"]:
+        train_data = None
+        valid_data = None
+        test_batch_filename = "test_batches_{}_{}_{}.h5".format(config["lm"], config["bit"], config["batch_size"])
+        test_data = LazyDataset(os.path.join(test_config["data_folder"], test_batch_filename))
+
+    else:
+        train_batch_filename = "train_batches_{}_{}_{}.h5".format(config["lm"], config["bit"], config["batch_size"])
+        train_data = LazyDataset(os.path.join(train_config["data_folder"], train_batch_filename))
+
+        valid_data = None
+        test_batch_filename = "test_batches_{}_{}_{}.h5".format(config["lm"], config["bit"], config["batch_size"])
+        test_data = LazyDataset(os.path.join(test_config["data_folder"], test_batch_filename))
+
+
+    dataset = {
+        "train": train_data,
+        "valid": valid_data,
+        "test": test_data, #test_data,
+        "entity2id": entity2id,
+        "relation2id": relation2id,
+        "rel_info": rel_info
+    }
+    return dataset
+
+
+def load_data(config, tokenize):
     """
     Creates train/val/test dataloaders (seperately).
     """

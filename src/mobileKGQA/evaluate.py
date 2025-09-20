@@ -149,7 +149,7 @@ class Evaluator:
         eval_loss, eval_acc, eval_max_acc = [], [], []
         f1s, hits, ems,  precisions, recalls = [], [], [], [], []
         valid_data.reset_batches(is_sequential=True)
-        num_epoch = math.ceil(valid_data.num_data / test_batch_size)
+        num_epoch = len(valid_data)
         if write_info and self.file_write is None:
             if self.args["experiment_name"].startswith("eval_"):
                 filename = self.args["experiment_name"][5:]
