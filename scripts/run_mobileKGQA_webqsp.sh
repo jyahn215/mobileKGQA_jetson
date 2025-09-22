@@ -29,7 +29,7 @@ cmd="python ./src/mobileKGQA/main.py ReaRev \
 --lr $lr \
 --gradient_clip 1 \
 --fact_drop 0 \
---batch_size 1 \
+--batch_size 8 \
 --eval_every 2 \
 --lm $lm \
 --num_iter $num_iter \
